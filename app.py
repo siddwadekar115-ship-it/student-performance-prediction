@@ -619,6 +619,8 @@ def teachers():
 
 
 if __name__ == "__main__":
-    boot()
+   boot()
+
+if __name__ == "__main__":
     # Port 5000 is taken by macOS AirPlay Receiver, which answers with HTTP 403.
     app.run(host="127.0.0.1", port=8080, debug=False)
