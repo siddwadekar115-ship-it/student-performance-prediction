@@ -618,8 +618,7 @@ def teachers():
     return render_page("Teachers", content)
 
 
-if __name__ == "__main__":
-   boot()
+boot()
 
 if __name__ == "__main__":
     # Port 5000 is taken by macOS AirPlay Receiver, which answers with HTTP 403.
