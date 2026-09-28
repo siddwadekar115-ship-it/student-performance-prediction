@@ -1,0 +1,447 @@
+{
+  "dataset": "UCI Higher Education Students Performance Evaluation (id 856)",
+  "citation": "Yilmaz, N. and Sekeroglu, B. (2019). https://doi.org/10.24432/C51G82",
+  "n_rows": 145,
+  "class_counts": {
+    "Excellent": 30,
+    "Average": 72,
+    "Poor": 43
+  },
+  "majority_class": "Average",
+  "majority_baseline_cv_accuracy": {
+    "mean": 0.496551724137931,
+    "std": 0.01888698474155746
+  },
+  "features": [
+    "Student_Age",
+    "High_School_Type",
+    "Scholarship",
+    "Additional_Work",
+    "Sports_Activity",
+    "Partner",
+    "Salary",
+    "Transportation",
+    "Accommodation",
+    "Mother_Education",
+    "Father_Education",
+    "Siblings",
+    "Parental_Status",
+    "Mother_Occupation",
+    "Father_Occupation",
+    "Weekly_Study_Hours",
+    "Reading_Non_Scientific",
+    "Reading_Scientific",
+    "Seminar_Attendance",
+    "Project_Impact",
+    "Class_Attendance",
+    "Midterm_Preparation_Company",
+    "Midterm_Preparation_Timing",
+    "Taking_Notes",
+    "Listening_in_Class",
+    "Discussion",
+    "Flip_Classroom"
+  ],
+  "excluded_from_model": [
+    "Student_ID",
+    "Grade",
+    "Performance_Category",
+    "Last_Semester_CGPA",
+    "Expected_Graduation_CGPA",
+    "Course_ID",
+    "Sex"
+  ],
+  "label_rule": {
+    "Excellent": "AA, BA",
+    "Average": "BB, CB, CC, DC",
+    "Poor": "DD, Fail"
+  },
+  "validation": {
+    "primary": "5-fold stratified cross-validation, shuffle, random_state=42",
+    "secondary": "80/20 stratified holdout, random_state=42",
+    "selection": "Highest mean macro-F1. Tie broken by mean recall of Poor."
+  },
+  "models": {
+    "Decision Tree": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.33103448275862063,
+          "std": 0.07150497018388868
+        },
+        "precision_macro": {
+          "mean": 0.35807535057535056,
+          "std": 0.07683567458366342
+        },
+        "recall_macro": {
+          "mean": 0.33216931216931217,
+          "std": 0.061661454318152904
+        },
+        "f1_macro": {
+          "mean": 0.32173358525532436,
+          "std": 0.06783881685294471
+        },
+        "poor_recall": {
+          "mean": 0.3888888888888889,
+          "std": 0.1610751875658778
+        }
+      },
+      "holdout": {
+        "accuracy": 0.41379310344827586,
+        "precision_macro": 0.3611111111111111,
+        "recall_macro": 0.3941798941798942,
+        "f1_macro": 0.3601900972590628,
+        "poor_recall": 0.1111111111111111
+      },
+      "confusion_matrix": [
+        [
+          3,
+          3,
+          0
+        ],
+        [
+          3,
+          8,
+          3
+        ],
+        [
+          4,
+          4,
+          1
+        ]
+      ],
+      "holdout_size": 29
+    },
+    "Logistic Regression": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.3448275862068966,
+          "std": 0.080869237238335
+        },
+        "precision_macro": {
+          "mean": 0.3539116439116439,
+          "std": 0.09427534439432046
+        },
+        "recall_macro": {
+          "mean": 0.3317989417989418,
+          "std": 0.0727653666098602
+        },
+        "f1_macro": {
+          "mean": 0.33061201793987105,
+          "std": 0.08017044750979375
+        },
+        "poor_recall": {
+          "mean": 0.2611111111111111,
+          "std": 0.1817269692644014
+        }
+      },
+      "holdout": {
+        "accuracy": 0.2413793103448276,
+        "precision_macro": 0.23232323232323235,
+        "recall_macro": 0.22486772486772486,
+        "f1_macro": 0.22518518518518518,
+        "poor_recall": 0.2222222222222222
+      },
+      "confusion_matrix": [
+        [
+          1,
+          4,
+          1
+        ],
+        [
+          4,
+          4,
+          6
+        ],
+        [
+          4,
+          3,
+          2
+        ]
+      ],
+      "holdout_size": 29
+    },
+    "Random Forest": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.4275862068965518,
+          "std": 0.05770069148510866
+        },
+        "precision_macro": {
+          "mean": 0.4135846560846561,
+          "std": 0.057367688268644995
+        },
+        "recall_macro": {
+          "mean": 0.39002645502645505,
+          "std": 0.05093946085511335
+        },
+        "f1_macro": {
+          "mean": 0.3890371284488932,
+          "std": 0.047502345865463494
+        },
+        "poor_recall": {
+          "mean": 0.28055555555555556,
+          "std": 0.14312970031098057
+        }
+      },
+      "holdout": {
+        "accuracy": 0.13793103448275862,
+        "precision_macro": 0.11025641025641027,
+        "recall_macro": 0.12698412698412698,
+        "f1_macro": 0.11574074074074074,
+        "poor_recall": 0.0
+      },
+      "confusion_matrix": [
+        [
+          1,
+          5,
+          0
+        ],
+        [
+          5,
+          3,
+          6
+        ],
+        [
+          4,
+          5,
+          0
+        ]
+      ],
+      "holdout_size": 29
+    },
+    "Naive Bayes": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.2827586206896552,
+          "std": 0.05114619646272872
+        },
+        "precision_macro": {
+          "mean": 0.40648077412783296,
+          "std": 0.051680306827703956
+        },
+        "recall_macro": {
+          "mean": 0.3686243386243386,
+          "std": 0.05290462935165802
+        },
+        "f1_macro": {
+          "mean": 0.25975740932464586,
+          "std": 0.058742463327036684
+        },
+        "poor_recall": {
+          "mean": 0.22777777777777777,
+          "std": 0.17612074982385953
+        }
+      },
+      "holdout": {
+        "accuracy": 0.3448275862068966,
+        "precision_macro": 0.2777777777777778,
+        "recall_macro": 0.46296296296296297,
+        "f1_macro": 0.3240740740740741,
+        "poor_recall": 0.5555555555555556
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          1
+        ],
+        [
+          11,
+          0,
+          3
+        ],
+        [
+          2,
+          2,
+          5
+        ]
+      ],
+      "holdout_size": 29
+    },
+    "SVM": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.4068965517241379,
+          "std": 0.06632891055748741
+        },
+        "precision_macro": {
+          "mean": 0.41106137670379156,
+          "std": 0.11628006718486561
+        },
+        "recall_macro": {
+          "mean": 0.358968253968254,
+          "std": 0.05488751792302812
+        },
+        "f1_macro": {
+          "mean": 0.3648038102876813,
+          "std": 0.06227465740332843
+        },
+        "poor_recall": {
+          "mean": 0.20833333333333334,
+          "std": 0.14433756729740643
+        }
+      },
+      "holdout": {
+        "accuracy": 0.27586206896551724,
+        "precision_macro": 0.2333333333333333,
+        "recall_macro": 0.23544973544973544,
+        "f1_macro": 0.23315508021390374,
+        "poor_recall": 0.1111111111111111
+      },
+      "confusion_matrix": [
+        [
+          1,
+          4,
+          1
+        ],
+        [
+          2,
+          6,
+          6
+        ],
+        [
+          2,
+          6,
+          1
+        ]
+      ],
+      "holdout_size": 29
+    }
+  },
+  "best_model": "Random Forest",
+  "top_features": [
+    {
+      "feature": "Scholarship_75%",
+      "importance": 0.03875433535409398
+    },
+    {
+      "feature": "Weekly_Study_Hours_Less than 5 hours",
+      "importance": 0.02450063101021269
+    },
+    {
+      "feature": "Student_Age_18-21",
+      "importance": 0.02313100428406189
+    },
+    {
+      "feature": "Additional_Work_Yes",
+      "importance": 0.018673214648262892
+    },
+    {
+      "feature": "Mother_Education_Primary school",
+      "importance": 0.018615423524945877
+    },
+    {
+      "feature": "Reading_Scientific_Sometimes",
+      "importance": 0.018449685183415717
+    },
+    {
+      "feature": "Accommodation_Rental",
+      "importance": 0.018276785817097706
+    },
+    {
+      "feature": "Father_Occupation_Government officer",
+      "importance": 0.018226579202403226
+    }
+  ],
+  "decision_tree_features": [
+    {
+      "feature": "Mother_Education_High school",
+      "importance": 0.19351870102365942
+    },
+    {
+      "feature": "Scholarship_75%",
+      "importance": 0.12477062216467233
+    },
+    {
+      "feature": "Student_Age_18-21",
+      "importance": 0.11184654904372074
+    },
+    {
+      "feature": "Additional_Work_No",
+      "importance": 0.09025712217316978
+    },
+    {
+      "feature": "Father_Education_MSc",
+      "importance": 0.07781689412929786
+    },
+    {
+      "feature": "Parental_Status_One or both parents died",
+      "importance": 0.07769871247618809
+    },
+    {
+      "feature": "Salary_USD 271-340",
+      "importance": 0.058385546483636114
+    },
+    {
+      "feature": "Seminar_Attendance_No",
+      "importance": 0.05296831630430151
+    }
+  ],
+  "sensitivity": {
+    "deployed_features": {
+      "Decision Tree": {
+        "f1_macro_mean": 0.32173358525532436,
+        "accuracy_mean": 0.33103448275862063
+      },
+      "Logistic Regression": {
+        "f1_macro_mean": 0.33061201793987105,
+        "accuracy_mean": 0.3448275862068966
+      },
+      "Random Forest": {
+        "f1_macro_mean": 0.3890371284488932,
+        "accuracy_mean": 0.4275862068965518
+      },
+      "Naive Bayes": {
+        "f1_macro_mean": 0.25975740932464586,
+        "accuracy_mean": 0.2827586206896552
+      },
+      "SVM": {
+        "f1_macro_mean": 0.3648038102876813,
+        "accuracy_mean": 0.4068965517241379
+      }
+    },
+    "plus_course_id": {
+      "Decision Tree": {
+        "f1_macro_mean": 0.5337275702720349,
+        "accuracy_mean": 0.5310344827586206
+      },
+      "Logistic Regression": {
+        "f1_macro_mean": 0.5221001219421204,
+        "accuracy_mean": 0.5103448275862069
+      },
+      "Random Forest": {
+        "f1_macro_mean": 0.5167909351968637,
+        "accuracy_mean": 0.49655172413793097
+      },
+      "Naive Bayes": {
+        "f1_macro_mean": 0.5298031013820487,
+        "accuracy_mean": 0.5103448275862068
+      },
+      "SVM": {
+        "f1_macro_mean": 0.5080501046676915,
+        "accuracy_mean": 0.5172413793103449
+      }
+    },
+    "plus_last_semester_cgpa": {
+      "Decision Tree": {
+        "f1_macro_mean": 0.36361647472400166,
+        "accuracy_mean": 0.4
+      },
+      "Logistic Regression": {
+        "f1_macro_mean": 0.3976718091461569,
+        "accuracy_mean": 0.4206896551724138
+      },
+      "Random Forest": {
+        "f1_macro_mean": 0.4118932411674347,
+        "accuracy_mean": 0.4482758620689656
+      },
+      "Naive Bayes": {
+        "f1_macro_mean": 0.2766092611764977,
+        "accuracy_mean": 0.29655172413793107
+      },
+      "SVM": {
+        "f1_macro_mean": 0.37250238514944395,
+        "accuracy_mean": 0.4344827586206897
+      }
+    }
+  }
+}

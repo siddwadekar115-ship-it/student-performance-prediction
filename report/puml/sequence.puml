@@ -1,0 +1,18 @@
+@startuml
+!include style.iuml
+skinparam linetype polyline
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+actor Student
+participant Browser
+participant Flask
+
+Student -> Browser : open /exam
+Browser -> Flask : GET questions
+Flask --> Browser : show form
+Student -> Browser : submit answers
+Browser -> Flask : POST answers
+Flask -> Flask : score percent
+Flask --> Student : category page
+@enduml

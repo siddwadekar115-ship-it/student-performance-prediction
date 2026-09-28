@@ -1,0 +1,51 @@
+@startuml
+!include style.iuml
+skinparam linetype polyline
+skinparam classAttributeIconSize 0
+skinparam nodesep 30
+skinparam ranksep 40
+hide circle
+
+class FlaskApp {
+  login()
+  predict()
+  exam()
+}
+class Pipeline {
+  load_csv()
+  evaluate()
+  fit_best()
+}
+class CollegeRecords {
+  questions()
+  internals()
+  attempts()
+}
+class Question {
+  id
+  topic
+  options
+  answer
+}
+class InternalMark {
+  name
+  subject
+  marks
+  category
+}
+class ExamAttempt {
+  user
+  score
+  percent
+  category
+}
+
+FlaskApp -down-> Pipeline : uses
+FlaskApp -down-> CollegeRecords : uses
+CollegeRecords -down-> Question
+CollegeRecords -down-> InternalMark
+CollegeRecords -down-> ExamAttempt
+
+Question -[hidden]right- InternalMark
+InternalMark -[hidden]right- ExamAttempt
+@enduml

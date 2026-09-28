@@ -1,0 +1,142 @@
+{
+  "n_rows": 90,
+  "class_counts": {
+    "Excellent": 20,
+    "Average": 59,
+    "Poor": 11
+  },
+  "majority_class": "Average",
+  "majority_baseline_cv_accuracy": {
+    "mean": 0.6555555555555556,
+    "std": 0.024845199749997625
+  },
+  "features": [
+    "internal_marks",
+    "assignment_score",
+    "attendance_percent"
+  ],
+  "label": "exam category from the exam percent",
+  "models": {
+    "Decision Tree": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.4444444444444445,
+          "std": 0.12422599874998833
+        },
+        "precision_macro": {
+          "mean": 0.4082443482443483,
+          "std": 0.09220243411574594
+        },
+        "recall_macro": {
+          "mean": 0.4590909090909091,
+          "std": 0.06767488313371904
+        },
+        "f1_macro": {
+          "mean": 0.3925986832797978,
+          "std": 0.09989687526470332
+        },
+        "poor_recall": {
+          "mean": 0.5333333333333333,
+          "std": 0.36132472314464664
+        }
+      }
+    },
+    "Logistic Regression": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.5222222222222224,
+          "std": 0.07453559924999302
+        },
+        "precision_macro": {
+          "mean": 0.5253439153439153,
+          "std": 0.06176509365137215
+        },
+        "recall_macro": {
+          "mean": 0.6303030303030304,
+          "std": 0.10880000026257831
+        },
+        "f1_macro": {
+          "mean": 0.503122803122803,
+          "std": 0.059677134749560996
+        },
+        "poor_recall": {
+          "mean": 0.7333333333333333,
+          "std": 0.25276251480171835
+        }
+      }
+    },
+    "Random Forest": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.5666666666666667,
+          "std": 0.08240220541217404
+        },
+        "precision_macro": {
+          "mean": 0.5427248677248676,
+          "std": 0.047671744798073075
+        },
+        "recall_macro": {
+          "mean": 0.5767676767676768,
+          "std": 0.1452031181337498
+        },
+        "f1_macro": {
+          "mean": 0.5085715064662433,
+          "std": 0.08875353151079657
+        },
+        "poor_recall": {
+          "mean": 0.5666666666666667,
+          "std": 0.25276251480171835
+        }
+      }
+    },
+    "Naive Bayes": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.6444444444444445,
+          "std": 0.06334307917217431
+        },
+        "precision_macro": {
+          "mean": 0.4792582417582417,
+          "std": 0.0943309630512718
+        },
+        "recall_macro": {
+          "mean": 0.43838383838383843,
+          "std": 0.07210469352181387
+        },
+        "f1_macro": {
+          "mean": 0.43745353412020077,
+          "std": 0.07336944577172994
+        },
+        "poor_recall": {
+          "mean": 0.16666666666666666,
+          "std": 0.23570226039551587
+        }
+      }
+    },
+    "SVM": {
+      "cv": {
+        "accuracy": {
+          "mean": 0.5,
+          "std": 0.08784104611578834
+        },
+        "precision_macro": {
+          "mean": 0.49309523809523803,
+          "std": 0.0843473827547495
+        },
+        "recall_macro": {
+          "mean": 0.5702020202020202,
+          "std": 0.11323441820388738
+        },
+        "f1_macro": {
+          "mean": 0.4737580061264272,
+          "std": 0.08364967060214093
+        },
+        "poor_recall": {
+          "mean": 0.6333333333333333,
+          "std": 0.21730674684008833
+        }
+      }
+    }
+  },
+  "best_model": "Random Forest"
+}

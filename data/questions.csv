@@ -1,0 +1,9 @@
+question_id,topic,question,option_a,option_b,option_c,option_d,answer
+Q1,Study habits,How many hours of self study are generally suggested on a working day?,Less than 1 hour,1 to 2 hours,No study is needed,Only before the exam night,B
+Q2,Attendance,Regular class attendance mainly helps a student to,Skip the textbook,Follow the class topics on time,Avoid all assignments,Reduce study hours to zero,B
+Q3,Notes,Taking notes in class is useful because,Notes replace the final exam,Notes help revision later,Notes are submitted as the only mark,Notes are optional for every subject,B
+Q4,Assignment,An assignment score is used by a teacher to,Replace attendance,See how the student completed the given work,Decide the bus route,Remove the internal exam,B
+Q5,Internal marks,Internal assessment is conducted,Only after the degree is finished,"During the semester, before the final exam",By the student alone at home with no record,Instead of all classes,B
+Q6,Revision,Reading the notes before a test helps a student to,Forget the topic,Recall the points taught in class,Skip the question paper,Change the syllabus,B
+Q7,Time,A weekly study plan is prepared so that,Every subject gets some time,Only one subject is opened,The exam date can be ignored,Attendance is not required,A
+Q8,Support,"If a student is weak in one subject, the useful step is",Hide the marks,Ask the teacher and revise that subject,Stop attending all classes,Copy another student's paper,B

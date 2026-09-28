@@ -1,0 +1,18 @@
+@startuml
+!include style.iuml
+skinparam linetype ortho
+
+start
+:Open login page;
+:Check username and password;
+switch (Role?)
+case (Student)
+  :Student exam;
+case (Teacher)
+  :Teacher marks;
+case (Admin)
+  :Admin teachers;
+endswitch
+:Show category;
+stop
+@enduml

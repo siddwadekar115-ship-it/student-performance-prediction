@@ -1,0 +1,24 @@
+@startuml
+!include style.iuml
+left to right direction
+skinparam linetype spline
+skinparam nodesep 36
+skinparam ranksep 70
+
+actor Admin
+actor Teacher
+actor Student
+
+usecase "Student\nperformance\nsystem" as sys
+
+database "UCI CSV" as uci
+database "Question file" as qfile
+database "Marks file" as mfile
+
+Admin --> sys : login, teachers
+Teacher --> sys : questions, marks
+Student --> sys : exam, profile
+sys --> uci : read rows
+sys --> qfile : questions
+sys --> mfile : save marks
+@enduml

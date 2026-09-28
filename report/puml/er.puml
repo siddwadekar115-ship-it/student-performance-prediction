@@ -1,0 +1,46 @@
+@startuml
+!include style.iuml
+skinparam linetype ortho
+hide circle
+
+entity "TEACHER" as teacher {
+  name
+  --
+  subject
+}
+entity "QUESTION" as question {
+  id
+  --
+  topic
+  options
+  answer
+}
+entity "ATTEMPT" as attempt {
+  user
+  --
+  score
+  percent
+  category
+}
+entity "INTERNAL" as internal {
+  name
+  --
+  subject
+  marks
+  category
+}
+
+teacher ||--o{ question : adds
+question ||--o{ attempt : answered as
+teacher ||--o{ internal : enters
+
+frame "UCI file, not linked" {
+  entity "STUDENT_ROW" as student {
+    id
+    --
+    habits
+    grade
+    category
+  }
+}
+@enduml

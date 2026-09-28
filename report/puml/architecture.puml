@@ -1,0 +1,21 @@
+@startuml
+!include style.iuml
+skinparam linetype ortho
+skinparam nodesep 28
+skinparam ranksep 28
+
+together {
+  rectangle "UCI CSV\n145 rows" as csv
+  rectangle "Decode codes\nand drop grade" as decode
+  rectangle "Five models\n5-fold CV" as models
+  rectangle "SVM form\non the website" as svm
+}
+
+rectangle "Exam CSV\nquestions and marks" as exam
+
+csv -right-> decode
+decode -right-> models
+models -right-> svm
+svm -down[dashed]-> exam
+note bottom of exam : Not an input to training
+@enduml

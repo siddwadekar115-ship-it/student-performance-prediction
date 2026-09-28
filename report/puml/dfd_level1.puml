@@ -1,0 +1,33 @@
+@startuml
+!include style.iuml
+skinparam linetype ortho
+skinparam nodesep 28
+skinparam ranksep 56
+
+usecase "1.0\nLogin" as login
+usecase "2.0\nPredict" as predict
+usecase "6.0\nEvaluation" as evaluation
+usecase "4.0\nExam" as exam
+usecase "3.0\nTrain models" as train
+usecase "5.0\nInternal marks" as internals
+
+database "D2\nQuestions and attempts" as d2
+database "D1\nUCI student CSV" as d1
+database "D3\nInternal marks" as d3
+
+login -down-> predict : session
+login -down-> exam : session
+login -down-> internals : session
+login -down-> evaluation : session
+train -up-> predict : fitted model
+train -up-> evaluation : scores
+train -down-> d1 : read rows
+exam -down-> d2 : questions
+internals -down-> d3 : save marks
+
+predict -[hidden]right- evaluation
+exam -[hidden]right- train
+train -[hidden]right- internals
+d2 -[hidden]right- d1
+d1 -[hidden]right- d3
+@enduml

@@ -1,0 +1,361 @@
+"""Extra chapter text. Numbers used here are explained again from metrics.json in the builder."""
+
+
+def _split(text: str) -> list[str]:
+    blocks = []
+    for part in text.strip().split("\n\n"):
+        line = " ".join(part.split())
+        if line:
+            blocks.append(line)
+    return blocks
+
+
+COLUMN_NOTES = {
+    "Student_Age": "Question 1 asks the age group. The answers are 18-21, 22-25 and above 26. I did not use the code 1, 2, 3 as a number, because 3 is not three times 1. It is only a group name. A teacher may think older students study differently, but age alone cannot decide Excellent or Poor. I kept the column because it is in the published questionnaire and it is known before the final grade.",
+    "Sex": "Question 2 is sex, female or male. I decoded it so that the data dictionary is complete, and then I removed it from the model. A study-help project should look at attendance, notes and study hours. Sex is not a step the student can take before the exam. Leaving it in the tree earlier made the model use it too much, so the deployed feature list does not contain it.",
+    "High_School_Type": "Question 3 is the type of high school: private, state or other. This is background. The student cannot change the old school during the present semester. I still kept it because the UCI form includes it and some papers use school type as a background attribute. It is one-hot encoded, so private is not greater than state.",
+    "Scholarship": "Question 4 is the scholarship level: none, 25 percent, 50 percent, 75 percent or full. In the decision-tree description, the 75 percent answer received a large split. That is a description of this small file, not a rule that a scholarship causes a grade. The final selected model is SVM, which does not print this split. I kept the column because scholarship is recorded before the end-of-term grade.",
+    "Additional_Work": "Question 5 asks whether the student does additional work, yes or no. A job can reduce study time. It can also mean the student is managing time. The column is only yes or no, so it does not say how many hours the job takes. I kept it as a habit-related question. The tree description gave some weight to the No answer. I do not treat that weight as advice to quit a job.",
+    "Sports_Activity": "Question 6 asks if the student does a regular sports activity. Sports can take time, and it can also be a routine. The file does not say which sport or how many days. I kept the yes/no answer. I did not invent a weekly sports hour column, because that number is not in the UCI file.",
+    "Partner": "Question 7 asks whether the student has a partner. This is a personal question. I kept it only because it is one of the published columns and the model comparison uses the same questionnaire. I would not show this answer on a public rank list. In the website the prediction form still asks it, because dropping it only in the form and keeping it in training would make the form and the model different.",
+    "Salary": "Question 8 is a salary band in US dollars, from 135-200 up to above 410. The file does not say whether this is the student's salary or the family salary. I treated it as a category. The band USD 271-340 appeared in the tree description. Income is not a study action. I have written in the results chapter that background columns should not be used to rank a student in public.",
+    "Transportation": "Question 9 is how the student reaches college: bus, private car or taxi, bicycle, or other. Travel can affect attendance if the distance is long, but the question does not ask the distance. I kept the four answers as separate categories. Bicycle is not a higher value than bus.",
+    "Accommodation": "Question 10 is where the student lives: rental, dormitory, with family, or other. Living place can change study time, but the column is only the type of stay. I did not add a distance or a rent amount. Those values are not in the file.",
+    "Mother_Education": "Question 11 is the mother's education, from primary school to PhD. In the decision-tree description this column, especially the high-school answer, had the largest split among the deployed columns. I am not saying a mother's school decides the grade. On 145 rows a tree can split on a chance pattern. SVM is the selected model and it does not use that split as a printed rule. I kept the column because it is in the questionnaire, and I excluded it from any claim of cause.",
+    "Father_Education": "Question 12 is the father's education, with the same levels as the mother question. The tree description also used the MSc answer. Education of parents is background. The student cannot change it before the internal exam. It stays in the feature list so that the experiment matches the published questions, except the columns I have named as excluded.",
+    "Siblings": "Question 13 is the number of sisters and brothers, grouped as 1, 2, 3, 4, or 5 or above. I did not use it as a numeric count in a formula. Each group is its own category after one-hot encoding. A larger family is not coded as a higher mark.",
+    "Parental_Status": "Question 14 is parental status: married, divorced, or one or both parents died. This is sensitive. The tree description used the third answer. I kept the column for the same reason as the other family questions, and the report says this kind of column must not be used as a public label for a student. The website is a local demo, not a college notice board.",
+    "Mother_Occupation": "Question 15 is the mother's occupation: retired, housewife, government officer, private sector, self-employment or other. Occupation is not an ordered scale. A government officer is not greater than a private employee. One-hot encoding is the reason I converted the codes to words first.",
+    "Father_Occupation": "Question 16 is the father's occupation. The list is retired, government officer, private sector, self-employment or other. There is no housewife code on this question in the UCI description I followed. I did not add one. Unknown codes stop the program instead of being mapped to a nearby job.",
+    "Weekly_Study_Hours": "Question 17 is weekly study hours: none, less than 5, 6-10, 11-20, or more than 20. This is the kind of column a teacher expects in a performance project. I kept it. The groups are still categories. I did not convert them into the numbers 0, 5, 10 and 20, because the original answers are ranges, not exact hours. A student who studies 6 hours and a student who studies 10 hours are in the same group.",
+    "Reading_Non_Scientific": "Question 18 asks about reading non-scientific books: none, sometimes or often. Reading can be a habit, but the question does not say which books. I kept the three answers. Often is not stored as the number 3 in the model.",
+    "Reading_Scientific": "Question 19 is the same style of question for scientific books and journals. I kept it separate from question 18. A student can read one type often and the other type never. Merging them would hide that difference, so I left both columns in the deployed list.",
+    "Seminar_Attendance": "Question 20 asks whether the student attends seminars, yes or no. The tree description gave a small weight to the No answer. Seminar attendance is an academic activity, so it fits the project topic better than salary. It is still only yes or no. The file has no seminar count.",
+    "Project_Impact": "Question 21 asks the impact of projects on success: positive, negative or neutral. This is the student's own opinion. It is not the project mark. I kept it as an opinion column. I did not treat positive as a higher grade.",
+    "Class_Attendance": "Question 22 is class attendance: always, sometimes or never. The synopsis talks about attendance, and this is the attendance column that actually exists in the UCI file. It is not a percentage. The internal-marks page on the website asks for an attendance percent separately, and that percent is not copied into this column and is not used to train the SVM.",
+    "Midterm_Preparation_Company": "Question 23 asks with whom the student prepares for midterm exams: alone, with friends, or not applicable. Group study and studying alone are different habits. I kept both the company question and the timing question, because they are not the same fact.",
+    "Midterm_Preparation_Timing": "Question 24 asks when the student prepares: close to the exam, regularly during the semester, or never. This matches the idea in the synopsis that preparation before the final result matters. The column is still a survey answer, not the internal mark itself.",
+    "Taking_Notes": "Question 25 is taking notes in classes: never, sometimes or always. I kept it because it is a direct study habit. The exam module in the website also has a small question about notes, but that quiz question is stored in questions.csv. It is not this UCI column.",
+    "Listening_in_Class": "Question 26 is listening in class: never, sometimes or always. It is close to attendance, but a student can attend and still not listen. I did not drop it as a duplicate. With 145 rows, two similar columns can still confuse a model, and that is one reason the accuracy stays low.",
+    "Discussion": "Question 27 asks whether the student discusses the subject: never, sometimes or always. Discussion is a class activity. I kept the three answers as categories. There is no column for the marks given for participation.",
+    "Flip_Classroom": "Question 28 asks whether a flip-classroom approach is useful, not useful, or not applicable. This is an opinion about a teaching method. It is not a mark. I kept it because the UCI authors included it in the questionnaire.",
+    "Last_Semester_CGPA": "Question 29 is the last-semester CGPA band. I decoded it for the dictionary and then excluded it from the deployed model. Last-semester CGPA is already a result. If I train on it, the model is partly copying an old grade. Table 7.3 shows the small change when this column is added back. That run is only a check.",
+    "Expected_Graduation_CGPA": "Question 30 is the CGPA the student expects at graduation. This is the student's guess about the future result. Using it as an input would mix the label with the student's own prediction. I excluded it. The data dictionary still lists every band so that a reader can see what was removed.",
+}
+
+
+def column_section() -> list[str]:
+    blocks = [
+        "H2 5.10 Notes on each questionnaire column",
+        "In this section I have written what I understood from each question in the UCI file. The code list is also given in Appendix A. Here I have added why I kept the column or why I removed it. I have not copied the UCI web page line by line. These notes are my own reading of the file while doing the project.",
+    ]
+    for index, (name, note) in enumerate(COLUMN_NOTES.items(), start=1):
+        blocks.append(f"H3 5.10.{index} {name.replace('_', ' ')}")
+        blocks.append(note)
+        blocks.append(
+            f"In the program the column name is {name}. During training, each answer becomes its own yes or no column. "
+            "If a new form sends an answer that was never seen in the 145 rows, one-hot encoding ignores that unknown answer instead of crashing. "
+            "I checked this idea while reading the scikit-learn pipeline, and the tests check that the banned columns are absent from the feature list."
+        )
+    return blocks
+
+
+CHAPTERS = {
+    "1": """
+H2 1.7 How this report follows the synopsis
+The approved synopsis says the project should warn the teacher when a student may fall in Excellent, Average or Poor, using study information, and that the system should have admin, teacher and student work. It also describes exams, a question bank and internal marks. The UCI file I downloaded does not contain question papers or internal-mark columns. I did not type imaginary internal marks into the training file.
+
+I divided the work into two parts that stay separate. The first part is the machine-learning model. It reads the 145-row UCI file and predicts a category from the questionnaire. The second part is the college workflow on the website. The teacher can store questions, the student can submit the short exam, and the teacher can enter internal marks, assignment marks and an attendance percent. The exam percentage uses its own rule: 75 and above is Excellent, 40 to 74 is Average, and below 40 is Poor. That rule is not the SVM result. The Predict page still shows the SVM category. A reader should not mix the two numbers.
+
+H2 1.8 Users of the system
+The admin looks after the teacher list and can open the evaluation table. The teacher looks after the question bank and the internal-mark register, and can also see the 145 UCI rows and the model table. The student fills the prediction form, attempts the exam, and reads his or her own attempt list. A student who opens the full student table is sent back to the dashboard. The message on that page says the records are limited to Admin and Teacher. I tested that path.
+
+There is no separate account for every student in the UCI file. Those rows are historical survey rows, not logins. The three demo passwords are written on the login page so that the viva can be shown on one laptop. I have not built a forgot-password screen.
+
+H2 1.9 What the project does not claim
+I do not claim that the selected model is ready for a college result. Chapter VII shows that always answering Average is more accurate than the SVM on this feature set. I also do not claim that the short exam in the website was used to train the model. The exam file is created when the program starts, if it is not already present. The training file remains data/uci_student_performance.csv.
+
+The project does not rank students against each other. The synopsis mentioned ranking in some places. I have a category, not a rank list, because a rank from a weak model would look more exact than the data allows.
+""",
+    "2": """
+H2 2.8 How I read the papers
+I did not reproduce the experiments from the papers. I read them to decide what to compare and what not to use as an input. Romero and Ventura describe prediction as one task inside educational data mining, along with clustering and relation mining [1]. I have done only prediction, and only with three classes. Baker and Yacef say that public datasets are widely used and that the field needs careful evaluation [2]. That is why I have reported macro-F1, accuracy and a majority baseline, not a single percentage.
+
+Han, Kamber and Pei explain classification, training data and test data [3]. I used their idea that the class label is the output. Cortez and Silva compared several algorithms on two school subjects and discussed student background and study time [4]. My comparison also uses more than one algorithm. Their dataset is not my dataset, so I have not copied their accuracy into my tables.
+
+Yilmaz and Sekeroglu studied the same 145-row collection and classified end-of-term performance [5]. The UCI page is the download I used [6]. Their paper can use a different feature list and a different split. I have not written their percentage as my result. My result is the number produced by my program and stored in results/metrics.json.
+
+Quinlan's paper is the reference for building a decision tree from examples [7]. I used a shallow tree because 145 rows are easy to memorise. Breiman's random forest builds many trees and votes [8]. I used 300 trees. Cortes and Vapnik describe the support vector classifier [9]. Pedregosa and the other scikit-learn authors document the library I called from Python [10].
+
+H2 2.9 Points I kept from the comparison
+The papers do not agree on one best algorithm. I therefore trained five and selected with a rule I can explain in the viva. The papers also show that previous marks are strong inputs. I removed grade and both CGPA questions so that the model cannot copy a result it is supposed to predict. The remaining gap is that study-habit questions on this small file do not separate the three classes well. That gap is the result of the project, not a missing chapter.
+""",
+    "3": """
+H2 3.8 Hardware table
+The guideline asks for the machine on which the project can run. I have listed a minimum that is enough for this program. Training 145 rows does not need a graphics card.
+
+H2 3.9 Who can do what
+The admin can log in, open the dashboard, open prediction, open the student table, open the evaluation page, and add or remove a teacher name. The admin does not edit the UCI grades. The teacher can log in, manage questions, enter internal marks, see attempts through the files, and open the same evaluation page. The student can log in, submit the exam, read my-result, and submit the questionnaire form. The student cannot open the question-bank editor. If the student tries, the site sends him back.
+
+Passwords in this demo are admin123, teacher123 and student123. They are short because the site is only on the local computer. I would not reuse them on a public server.
+
+H2 3.10 Operating constraints
+The site binds to 127.0.0.1 and port 8080. On my Mac, port 5000 is used by AirPlay. Opening that port shows a 403 page that is not my Flask program. I have written the correct address in Appendix B. The program trains once at startup. A second click on Predict does not run the five-fold comparison again. The tables in Chapter VII come from the training run that wrote metrics.json.
+
+The question bank, internal marks and exam attempts are CSV files under the data folder. They can be deleted to reset the demo. Deleting the UCI file will stop training, and the program will not invent a replacement file.
+""",
+    "4": """
+H2 4.10 How to read the diagrams
+Fig. 4.1 shows the two paths. The top path is the UCI file, decoding, model comparison and the SVM used by the form. The side note says the exam CSV is not an input to training. Fig. 4.2 is the context data-flow diagram. Admin, teacher and student are outside the system. The UCI file, the question file and the marks file are the outside stores. Fig. 4.3 breaks the system into login, prediction, training, exam, internal marks and evaluation.
+
+Fig. 4.4 is the use-case diagram. The ovals are the actions. Manage teachers is an admin action. The question bank and internal marks are teacher actions. Take exam is a student action. Predict category is available after login. Fig. 4.5 is the class diagram of the three Python parts I wrote: the Flask pages, the pipeline and the college record functions, with the question, internal mark and attempt data. Fig. 4.6 is the sequence for one exam submission. Fig. 4.7 is the activity from login to the role branch. Fig. 4.8 is the entity diagram. The UCI student row is not the same entity as the exam attempt.
+
+H2 4.11 Design decisions
+I kept one Flask process and no database server. A database would be more work than this dataset needs, and the university project can be shown from CSV files. I kept the label rule in one place in ml_pipeline.py so that the website and the report use the same Excellent, Average and Poor definition. The exam band is a second function in college_records.py. The two functions are not the same code path.
+
+The prediction form is built from the feature column list. If I exclude a column in the pipeline, the form stops asking for it. Course id and sex are excluded, so the form does not ask for them. Grade is not on the form. The student cannot type the answer the model is supposed to guess.
+""",
+    "5": """
+H2 5.11 Exam and internal marks in code
+college_records.py creates four files if they are missing: questions.csv, internal_marks.csv, exam_attempts.csv and teachers.csv. The question file is seeded with eight short questions I wrote for the demo, on study habits, attendance, notes, assignments, internal assessment, revision, weekly planning and asking the teacher for help. They are not copied from a university question paper.
+
+When the teacher saves an internal record, the program converts internal marks out of 30 into 50 percent of the score, assignment marks out of 20 into 30 percent, and attendance percent into 20 percent. The sum is then banded. A blank or a word in a numeric box shows an error on the page instead of saving a zero by accident only when the conversion fails. I still expect the teacher to type marks inside the stated limits. The page does not yet block a number above 30. That is a limit of this version.
+
+When the student submits the exam, each question is compared with the stored answer letter. The score is the number of correct letters. The percent is score divided by the number of questions, multiplied by 100. The attempt is appended to exam_attempts.csv. The my-result page lists only the rows for the logged-in username.
+
+H2 5.12 Training steps in plain language
+The program reads the CSV with pandas. It maps every code through the dictionary in COLUMN_SPECS. It builds Performance_Category from the letter grade. It drops the excluded names. It builds five pipelines. Each pipeline imputes with the most frequent value, one-hot encodes, scales, and then calls the classifier. Cross-validation is stratified, so each fold keeps a mix of the three classes. The winning name is the highest mean macro-F1. The program then fits that winner on all 145 rows for the form. The metrics file is written before that final fit is used as the published score. The published score remains the cross-validation score.
+
+The holdout split is 80 percent train and 20 percent test. 145 times 0.2 is 29, so the confusion matrix is on 29 students. 145 minus 29 is 116 training rows in that one split. I do not choose the winner from these 29 rows.
+""",
+    "6": """
+H2 6.7 More checks I did by reading the pages
+I logged in as admin and opened the teacher page. The default row is Class Teacher and General. Adding a name and a subject adds a row. Remove deletes that name. I logged in as teacher and opened the question bank. The eight seed questions are listed with the answer letter. Remove deletes one id. The add form needs a topic, a question, four options and a letter. I logged in as student and opened the exam. Every question has four radio buttons. Submit writes one attempt. My result shows the percent and the category. I then opened Predict and submitted a profile. The category on that page comes from the model, and it can disagree with the exam category. That disagreement is expected.
+
+I also tried the student login on the question page and on the internal-marks page. Both redirect to the dashboard. The teacher login can open evaluation and the word Macro-F1 is on that page. Wrong password stays on the login page with the invalid-password line.
+
+H2 6.8 Calculation check for the holdout
+I used the confusion matrix in Chapter VII as a manual check. Correct predictions are the diagonal cells. Their sum divided by 29 is the holdout accuracy. It will not equal the five-fold accuracy, because the five-fold score averages five different test folds. If a cell in the Poor column and the Excellent row is non-zero, an Excellent student was called Poor. I have not edited the matrix to make the diagonal larger.
+
+H2 6.9 Regression of the old pages
+After I added the exam routes, I ran the old tests again. The student is still blocked from the student table. The teacher still sees the metric table. A prediction of the first data row still returns one of the three words. I did not delete those tests when I added the new pages.
+""",
+    "7": """
+H2 7.8 Reading each model without hiding the weak score
+Decision Tree is limited to depth 5. On this data its macro-F1 stays near the other models and its accuracy stays under the baseline. A deeper tree would fit the 145 rows more closely and would look better on the training rows, which is not the test I want.
+
+Logistic Regression is the linear comparison. After one-hot encoding, many columns are 0 or 1 and some of them move together, because a question's answers are exclusive. The program can print a numeric warning for that model. I did not delete the model from the table because of the warning. Its score is finite and it is not the winner.
+
+Random Forest has a higher accuracy than some of the others in the cross-validation table, but its Poor recall is weak and its macro-F1 is not the best. I did not select it on accuracy. Selecting on accuracy would favour the Average class.
+
+Naive Bayes has its own assumptions. The one-hot columns of a single question are not independent, because exactly one of them is usually 1. A low score here is understandable. I still report it so that the comparison has the five names from the plan.
+
+SVM is the selected model when its mean macro-F1 is the highest. The RBF kernel can draw a curved boundary. With 145 rows the boundary is not stable, which is why the fold standard deviation is reported beside the mean. Class weight balanced stops the model from ignoring the smaller classes completely, but the Poor recall is still low. I have not claimed that balanced weights solved the imbalance.
+
+H2 7.9 What a teacher can do with this output
+If the model says Poor, the teacher can look at attendance and study hours on the form and talk to the student. The teacher should not announce the label as a final mark. If the model says Excellent, the same caution applies, because many Excellent students fall in other cells of the confusion matrix. The internal-mark page is the place for the marks the teacher actually gave. The prediction page is the place for the questionnaire estimate. Keeping both pages is how I matched the synopsis without mixing the two kinds of data.
+""",
+    "8": """
+H2 8.5 What I would say in the viva
+I would start from the dataset size and the three class counts. I would then show Table 7.1 and say that SVM won on macro-F1 and still lost to the Average baseline on accuracy. I would open Table 7.3 and explain why course id was removed. I would log in as teacher, add nothing if the seed questions are enough, and then log in as student, submit the exam, and show that the exam category is a percentage band. I would open Predict and show a second category from the model. If the two categories differ, I would say that this is the correct behaviour of this project.
+
+H2 8.7 Where the project stands
+The comparison is finished and the website runs on this laptop. The selected model is recorded in the metrics file and repeated in Chapter VII. The exam and the internal marks are present as their own pages, and they are not training columns. The diagrams in Chapter IV match those pages: data flow, use case, class, sequence, activity and the entity diagram. The cover carries the semester, the programme, the roll number and the examination year. The declaration is a separate file. What remains outside this program is the department plagiarism check, my signature on that declaration, and the one-sided hard-bound copy sent to the department in Mysore. I have not written a plagiarism percentage into the declaration, because I have not received that percentage yet.
+
+H2 8.6 Limits I will not hide
+The training data is not from my college. The exam questions are short demo questions. The passwords are fixed. There is no digital signature on the declaration page inside the portal file, because that page has to be signed by me after I read the report and after the plagiarism tool used by the department has been run. This report does not contain a plagiarism percentage. The hard-bound copy is a printing step after the PDF is ready. It is not produced by the Python program.
+""",
+}
+
+
+FIGURE_NOTES = """
+H2 4.12 Figure numbers in this chapter
+The figures in this chapter are numbered as Fig. 4.1 to Fig. 4.8. Fig. 4.1 is the processing path from the CSV to the model and the separate exam files. Fig. 4.2 is the context data-flow diagram. Fig. 4.3 is the level-1 data-flow diagram with the six processes and the three stores. Fig. 4.4 is the use-case diagram. Fig. 4.5 is the class diagram. Fig. 4.6 is the sequence diagram for the exam submission. Fig. 4.7 is the activity diagram after login. Fig. 4.8 is the E-R diagram. The result charts are not in this chapter. They are Fig. 7.1, Fig. 7.2 and Fig. 7.3, because they belong to the results. Tables keep the same habit: Table 2.1 is in the literature chapter, Table 3.1 to Table 3.3 are in the requirements chapter, Table 5.1 is in implementation, Table 6.1 is in testing, and Table 7.1 to Table 7.5 are in the results.
+
+The figures are drawn by a diagram program, so each arrow starts on one shape and ends on the next. They can be rebuilt with the report. The text in each box is the name of a page or a file in this project, not a general template. If a box says exam, the website has an exam page. If a box says UCI CSV, the file is data/uci_student_performance.csv.
+
+H2 4.13 Walk from the context diagram to a click
+Start at Fig. 4.2. The student is outside the system. The arrow into the system is the profile or the exam answers. The arrow out to the question file is a read when the exam page opens, and a write when the teacher saves a question. The arrow to the marks file is the internal-mark save. The arrow to the UCI file is a read at startup. Nothing in that diagram writes a new grade into the UCI file.
+
+Then look at Fig. 4.3. Process 1.0 is login. The session arrows go from login to predict, the exam, internal marks and evaluation. Process 2.0 is predict. Process 3.0 is the training that already finished before the page opened. It reads D1, sends the fitted model to predict, and sends the scores to evaluation. Process 4.0 is the exam and it uses D2, the question and attempt files. Process 5.0 is internal marks and it writes D3. Process 6.0 is the evaluation table. If a process box has no matching page, the diagram is wrong. I checked each box against the menu.
+
+Fig. 4.6 is only the exam, so it does not show the SVM. The SVM path is the predict form, which I described in section 4.6 in words because one sequence diagram was enough for the chapter. The activity in Fig. 4.7 splits on the role after the password check. A student branch ends at the exam or the prediction. A teacher branch ends at questions or internal marks. An admin branch ends at the teacher list. All three can still open Predict. The diagram draws the role split, not every menu link.
+
+Fig. 4.5 names the Python files rather than a database class for every column. FlaskApp is app.py. Pipeline is ml_pipeline.py. CollegeRecords is college_records.py. The three lower boxes are the rows those files store. I did not draw scikit-learn classes, because those classes come from the library and I did not design them. Fig. 4.8 repeats the same split as entities, so that the data-flow stores and the entity boxes name the same files.
+"""
+
+REQUIREMENTS = """
+H2 3.11 What each requirement means in the program
+FR1 is the login. The three names are stored in the program. A correct pair opens the dashboard. FR2 is the wrong password. The page does not say which of the two fields was wrong. It only says the username or password is invalid. FR3 is the dashboard. The three counts and the selected model name come from the metrics file that was written when the program started. FR4 is the prediction form. Every dropdown is a column the model is allowed to use. Submitting the form returns one category.
+
+FR5 is the block on the student table. The student menu does not show the link, and the address /students also checks the role. FR6 is the same table and the evaluation table for admin and teacher. FR7 is the baseline sentence. The page that shows accuracy also shows the accuracy of always answering Average, so a high-looking number cannot sit alone.
+
+FR8 is the question bank. Only the teacher login can open it. Add appends a row. Remove deletes by id. FR9 is the student exam. The percent uses the number of correct letters. The band uses 75 and 40. FR10 is the internal-mark form. The weights are 50, 30 and 20 as written on the page. FR11 is the teacher list for the admin. It stores a name and a subject and does not create a password. FR12 is the rule I will repeat in the viva: the exam band and the SVM category are two results. Neither page overwrites the other.
+
+H2 3.12 What I will not add to meet a requirement on paper
+I will not add a rank list. A rank needs a score the teacher can trust, and Chapter VII says the model is below the baseline. I will not add a payment or a fee module. The synopsis I am following is about performance, questions and internal marks, not fees. I will not connect the site to the internet for the submission demo. The address is 127.0.0.1 on port 8080. I will not store the UCI students as logins. They did not consent to a password in this project, and the file has no password column.
+
+The non-functional points stay small. The random seed is 42. Training of 145 rows finishes in seconds on a normal laptop. The predicted word is labelled as a model result. The hardware in Table 3.3 is the university minimum, and this project does not need more than that.
+
+H2 3.13 Data stores and who writes them
+The UCI file is read by the training program and is not written by the website. The question file is written by the teacher and read by the student exam. The attempt file is written when the student submits and is read by the My result page. The internal-mark file is written by the teacher. The teacher-name file is written by the admin. Login passwords are not in any of these files. They stay in app.py for the demo. This split is also what Fig. 4.8 shows. A mark entered on the internal page cannot change a grade in the UCI file, and a predicted category cannot change an exam percent.
+"""
+
+SYNOPSIS_MAP = """
+H2 1.10 Mapping the synopsis to the screens
+The synopsis describes an early warning for Excellent, Average and Poor. In this project that warning is the Predict page. The input is the questionnaire, not the final grade. The output is one of the three words, and the dashboard states that a constant Average answer is more accurate on this file. I kept that sentence on the dashboard so that the demo does not look stronger than Chapter VII.
+
+The synopsis describes a question bank. That is the Questions page on the teacher login. The teacher can add a question with four options and one correct letter, and can remove a question by its id. The student does not edit this list. The eight questions that appear on a fresh run are stored in data/questions.csv. They are short questions I wrote for the demonstration. They are not a college question paper.
+
+The synopsis describes an exam. That is the Exam page on the student login. The student answers every question and submits once. The result page shows the score, the percent and the band. The band is 75 and above for Excellent, 40 up to but not including 75 for Average, and below 40 for Poor. I can explain this rule without opening the model file, because it does not use the model file.
+
+The synopsis describes internal marks. That is the Internal marks page. The teacher types a student name, a subject, internal marks out of 30, an assignment score out of 20 and an attendance percent. The page combines them as 50 percent, 30 percent and 20 percent and stores the band. This table is data/internal_marks.csv. It is not joined to the UCI rows. A name typed here is not a student id from the UCI file unless the teacher happens to type the same text. I do not treat a matching text as a link.
+
+The synopsis describes an admin who can manage teachers. That is the Teachers page. It stores a name and a subject. It does not create a password. The demo still has one teacher login. I will say that clearly if the examiner asks how a second teacher signs in. In this version the second name is only a list.
+
+The synopsis describes the student seeing a result after the exam. My result shows the exam band. The Predict page shows the questionnaire band. I did not replace one with the other. A student can finish the exam and still be told a different category on the prediction form. Chapter VII is about the prediction category only.
+
+H2 1.11 Order I will follow while explaining the project
+I will start with the problem: the grade should not be an input. I will then show the 145 rows and the three counts, 30 Excellent, 72 Average and 43 Poor. Average divided by 145 is about 49.7 percent, which is the baseline. I will then show Table 7.1 and name the selected model and its lower accuracy. I will then show Table 7.3 and explain course id. Only after that will I open the website, because the website is the demo of the same numbers, not a different result.
+
+On the website I will log in as teacher, show the question list, then log out and log in as student, submit the exam, and read the percent. I will then open Predict and show a second category. I will log in as admin only if the examiner wants the teacher list. I will not claim that the exam percent trained the SVM.
+
+H2 1.12 Files that belong to the submission
+The report PDF is this write-up, including the source listing in Appendix C. The declaration is a separate PDF, with the signature line empty until I sign it. The program folder has app.py, ml_pipeline.py, college_records.py, the tests, the UCI csv and the requirements file. The metrics file is produced by the program. I do not type the percentages into the report by hand. The builder reads metrics.json. If I change a model setting, I have to run the program and build the report again, or the chapter and the website will disagree.
+"""
+
+LITERATURE_MORE = """
+H2 2.11 What I noted from each reference
+From Romero and Ventura I took the idea that predicting student performance is one part of educational data mining, not the whole subject [1]. Their review also talks about clustering and finding association rules. I did not build clusters. I only classified three labels. I also noted their warning that the data and the method should be described clearly. That is why Chapter VII names the file, the split and the baseline.
+
+From Baker and Yacef I took the point that many studies use a public dataset and that the community should look past a single accuracy number [2]. I used a public UCI file and I reported macro-F1, recall of the Poor class and a majority baseline. I did not try to match any percentage printed in their 2009 review.
+
+From Han, Kamber and Pei I took the basic classification setup [3]. The input columns and the class label are different. The model is trained on known rows and checked on rows it did not use for that measurement. I followed that by using cross-validation for the published scores. I did not copy exercises from the book into this report.
+
+From Cortez and Silva I took the habit of comparing more than one algorithm on student background and study information [4]. Their students are secondary-school students in two subjects. My file is higher-education questionnaire data. I have not written their accuracy as mine. The useful idea was the comparison, not the number.
+
+From Yilmaz and Sekeroglu I took the dataset and the fact that end-of-term performance can be turned into classes [5]. The download page is the UCI record [6]. I made my own three bands from the letter grades: AA and BA as Excellent, BB through DC as Average, and DD and Fail as Poor. If their paper uses a different grouping or different columns, their score will not match Table 7.1. I do not treat that as an error in either work. They are different experiments on related data.
+
+From Quinlan I took the idea that a tree asks one question at a time and ends in a class [7]. I set a maximum depth of 5 and a minimum of 2 samples in a leaf so that the tree cannot grow until every training row is memorised. The tree is not the selected model. I still keep it in the comparison, and I use its split list only as a description in section 7.5.
+
+From Breiman I took the idea that many trees can vote [8]. I used 300 trees, depth 8, and a balanced class weight. Random forest did not win on macro-F1. I did not change the tree count after seeing the score, because changing the count to chase a higher number on the same 145 rows would not make a new result. It would only fit this file again.
+
+From Cortes and Vapnik I took the support-vector classifier as the boundary method [9]. I used the RBF kernel that scikit-learn provides, with scaling before the classifier so that one column does not dominate because of its numeric size. After one-hot encoding the values are 0 and 1, and scaling still keeps the pipeline the same for every model. SVM won the macro-F1 comparison. Its accuracy is still below the baseline, so winning the comparison is not the same as being good enough for a college.
+
+From Pedregosa and the other scikit-learn authors I took the library calls, not a result [10]. The pipeline, the stratified folds and the metrics are their implementations. My choices are the feature list, the label rule, the selection rule and the decision to show the baseline.
+
+H2 2.12 What I decided after the reading
+I decided to train five models rather than one. I decided to select by macro-F1 rather than accuracy. I decided to remove the grade, both CGPA questions, course id and sex. I decided to keep the other questionnaire columns, including family and income questions, and to say in the results that those columns are not advice to a student. I decided to put the exam and the internal marks in separate files so that the synopsis workflow exists without being mixed into the training table.
+
+I also decided not to add a new algorithm. A BCA project can be a careful use of known methods on a named dataset. Inventing a method and then testing it only on 145 rows would not be more honest than this comparison.
+"""
+
+GRADE_BANDS = """
+H2 7.12 How each letter grade enters a band
+The UCI grade codes run from 0 to 7. I mapped them to letters before I mapped the letters to the three project categories. Code 7 is AA. Code 6 is BA. Both go to Excellent. I put AA and BA together because both are the high grades in this scale. I did not split Excellent into two model classes. The project topic asks for three categories, not eight.
+
+Code 5 is BB. Code 4 is CB. Code 3 is CC. Code 2 is DC. All four go to Average. This is why Average is the largest group. Four letters share one label, while Excellent has two letters and Poor has two letters. A reader who only looks at the three counts can think the classes were designed to be equal. They were not. They follow the letter groups in the synopsis style: high, middle and low. The middle group collects more letters, so it collects more students. That is the reason the majority baseline is close to 50 percent even though there are three labels.
+
+Code 1 is DD. Code 0 is Fail. Both go to Poor. I did not call DD an Average grade. A student on DD is already on the weak side of this scale. If a college uses a different passing rule, this band would change, and the model would have to be trained again. I have not tried a second banding in the selected model. Doing so after seeing the accuracy would be changing the question to chase a score.
+
+The category column is built in the program from the letter. It is not a column I typed. The tests check that AA maps to Excellent, DC maps to Average and Fail maps to Poor. Those three checks are enough to lock the ends and the middle of the scale. The other letters use the same dictionary, so a mistake in BB or CC would be visible in the class counts. The counts in the abstract are Excellent, Average and Poor adding to 145. If they do not add to 145, the report and the file have drifted apart.
+
+I use the letter only as the label. After the category is created, the letter and the category are both removed from the feature list. A model that still received AA as an input would not be predicting. It would be reading the answer. Table 5.1 records that removal. The student table in the website still shows the grade so that a teacher can compare the true letter with the predicted category during the demo. Showing it on the screen is not the same as training on it.
+"""
+
+EXAMPLES = """
+H2 6.10 Worked examples of the exam band
+The exam band is a percentage, not the SVM. I checked it with small numbers before trusting the page. If the question file has 8 questions and the student gets 6 correct, the percent is 6 / 8 times 100, which is 75. The rule says 75 and above is Excellent, so this paper is Excellent. If the student gets 5 correct, the percent is 62.5, which is Average. If the student gets 3 correct, the percent is 37.5, which is Poor. A score of 0 is Poor. A score of 8 is 100 and Excellent. I used these cases as a hand check of college_records.py. The website stores the percent with one decimal place.
+
+The same function is used for internal marks, but the percent is built from three inputs. Internal marks are out of 30 and then multiplied by 50. Assignment marks are out of 20 and then multiplied by 30. Attendance is a percent and then multiplied by 20. Example: internal 24, assignment 16, attendance 80. The parts are 24 / 30 times 50, which is 40, plus 16 / 20 times 30, which is 24, plus 80 / 100 times 20, which is 16. The total is 80, so the band is Excellent. Example: internal 12, assignment 8, attendance 50. The parts are 20, plus 12, plus 10, which is 42, so the band is Average. Example: internal 6, assignment 4, attendance 40. The parts are 10, plus 6, plus 8, which is 24, so the band is Poor. These examples are not rows from the UCI file. They are numbers I typed to test the formula.
+
+H2 6.11 Worked example of one prediction
+The prediction form does not use the formula above. It sends the questionnaire answers through the same pipeline that was fitted at startup. I cannot do the RBF kernel by hand in a few lines, so I do not pretend to. What I can check by hand is the path. The grade is not on the form. Course id is not on the form. Sex is not on the form. The two CGPA questions are not on the form. The page must return one of the three words. Test T9 posts the first decoded row and checks that the reply contains one of those words. It does not check that the word matches the student's true grade, because the model is often wrong, and a test that demanded the true grade would fail for a honest reason.
+
+H2 6.12 How the five-fold split is counted
+There are 145 students. Stratified 5-fold cross-validation makes five test folds. 145 divided by 5 is 29, so each test fold is about 29 students and each training part is about 116. The program does not print every fold's confusion matrix in the report. It prints the mean and, for macro-F1, the standard deviation. The standard deviation is there because 29 students is a small test. One fold can look better than another by chance. I would not drop a model for losing on a single fold.
+
+The separate holdout used for Table 7.2 is also 20 percent, which is 29 students, and 80 percent, which is 116. It is one split, not the average of five. Section 7.3.1 adds the diagonal and divides by 29. I did that addition myself from the table so that a typing error in the prose would be visible.
+
+H2 6.13 Checks that are still manual
+The automated tests do not click every button in a real browser. Before the viva I still open http://127.0.0.1:8080 and walk admin, teacher and student once. I look at the dashboard numbers and compare them with Table 7.1. If the website accuracy and the report accuracy differ, I stop and rebuild the report from the metrics file instead of editing either number. I also look at one exam result and one internal-mark result and compare them with the hand examples in section 6.10. If 6 out of 8 is not Excellent, the percentage rule is wrong and I fix the code before the submission.
+
+H2 6.14 Defects I am leaving as they are
+Logistic regression can print numeric warnings because some one-hot columns move together. The score in the table is still a number, and the model is not selected, so I left the warnings out of the viva by not treating them as a crash. The internal-mark form does not refuse a value above 30. A teacher can type 40. I will say that in the viva rather than hide the form. The three passwords are visible on the login page. That is acceptable only because the site is bound to this computer. I have not added a database of users in this version.
+"""
+
+MANUAL = """
+H2 5.13 How I use the website during the demo
+I start the program with python app.py from the project folder. The terminal should say the address http://127.0.0.1:8080. I type that address in the browser. I do not type port 5000. On the Mac I used, port 5000 is AirPlay and the browser says access was denied. That message is not from Flask.
+
+The login card has two boxes, Username and Password, and a Login button. Under the form the three demo accounts are written, because this is a viva machine and not a public site. If I type a wrong password, the page stays on login and shows Invalid username or password. I checked this with admin and the password wrong.
+
+After a correct login the header shows the username and the role, and a Logout link. Logout clears the session and returns to the login card. I use logout whenever I change from student to teacher, because the menu is built from the role.
+
+H2 5.14 Admin screens
+As admin I see Dashboard, Predict, Students, Teachers, Evaluation and About. Dashboard shows three counts, Excellent, Average and Poor, and the name of the selected model. It also prints the cross-validation accuracy next to the accuracy of always saying Average. I use this page to remind myself that the model is the weaker of those two numbers.
+
+Students opens the 145-row table. It is the UCI file after decoding, not a list of people who logged in. I do not edit grades on this page. Teachers opens a small table. The first row is Class Teacher, subject General, which the program writes when the teacher file is missing. I can type a name and a subject and press Add teacher. Remove deletes that name. This list does not create a new password. The only teacher login remains teacher and teacher123.
+
+Evaluation shows one row for each of the five algorithms. The columns are accuracy, macro precision, macro recall, macro-F1 and Poor recall. The note under the table says macro-F1 is the selection metric. About repeats the dataset name, the grade bands, the excluded columns and the selected model name.
+
+H2 5.15 Teacher screens
+As teacher I see Dashboard, Predict, Students, Questions, Internal marks, Evaluation and About. Questions lists the seed questions with id, topic, question text and the answer letter. Remove deletes that id. The add form asks for topic, question, option A, option B, option C, option D and the correct letter. I wrote the seed questions myself so that the viva does not depend on a copied question paper. They are about study hours, attendance, notes, assignments, internal tests, revision, a weekly plan and asking the teacher for help.
+
+Internal marks explains the weights on the page: internal marks are out of 30 and count as half of the combined score, assignment is out of 20 and counts as 30 percent, and attendance is already a percent and counts as 20 percent. After Save marks, the page shows the combined percent and the band. The band words are the same three words as the model, but the calculation is this weighted percent. A later Predict click does not read this row.
+
+If I type a word in a marks box, the page says to enter numbers. I should also keep internal marks at or below 30 and assignment at or below 20. The current page does not block a larger number. I will mention that limit if the examiner asks.
+
+H2 5.16 Student screens
+As student I see Dashboard, Predict, Exam, My result and About. I do not see Students, Evaluation, Questions or Internal marks. If I type the address /students myself, the site returns to the dashboard and the message says the records are limited to Admin and Teacher. The same kind of block exists for the question editor and the internal-mark form.
+
+Exam lists every question from the question file. Each question has four radio buttons. The button is required, so I cannot submit a blank paper. Submit exam counts how many chosen letters match the stored answer. Percent is that count divided by the number of questions, times 100. Excellent starts at 75. Average starts at 40. Below 40 is Poor. My result lists attempt id, score, percent and category for this username only. The line on that page says the category comes from the percentage, not from the SVM model.
+
+Predict is a different form. The dropdowns are the questionnaire columns that the model is allowed to use. There is no grade dropdown and no course dropdown. After submit, the page shows one of Excellent, Average or Poor. If the model can give class percentages, those are shown too. This label can disagree with the exam label. I treat that as normal, because the two pages do not share a formula.
+
+H2 5.17 What I check before I shut the laptop
+I confirm the terminal is still the Flask process and not an old process on port 5000. I confirm results/metrics.json exists, because the report tables are read from that file. I do not edit the JSON by hand. If I change the training code, I run the program again so that the JSON, the three charts and the report are rebuilt together. The charts are class_distribution.png, model_comparison.png and confusion_matrix.png in the results folder.
+
+The data folder holds the UCI file and, after the first run of the website, the question, attempt, internal-mark and teacher files. Deleting the UCI file will stop the model. Deleting only the exam files resets the demo questions the next time the missing file is created. I do not delete the UCI file to reset the exam.
+"""
+
+
+def extras(key: str) -> list[str]:
+    text = CHAPTERS.get(key, "")
+    blocks = _split(text) if text else []
+    if key == "5":
+        blocks.extend(column_section())
+        blocks.extend(_split(MANUAL))
+    if key == "4":
+        blocks.extend(_split(FIGURE_NOTES))
+    if key == "3":
+        blocks.extend(_split(REQUIREMENTS))
+    if key == "1":
+        blocks.extend(_split(SYNOPSIS_MAP))
+    if key == "2":
+        blocks.extend(_split(LITERATURE_MORE))
+    if key == "6":
+        blocks.extend(_split(EXAMPLES))
+    if key == "7":
+        blocks.extend(_split(GRADE_BANDS))
+    return blocks
+
+
+def hardware_rows() -> list[list[str]]:
+    return [
+        ["Processor", "Intel Core i3 or any similar laptop processor"],
+        ["Memory", "4 GB RAM is enough for 145 rows"],
+        ["Disk", "About 20 GB free space, as in the guideline"],
+        ["Display", "A normal laptop screen for the browser demo"],
+        ["Network", "Not required after the UCI file is already downloaded"],
+        ["GPU", "Not used"],
+    ]
+
+
+def extra_tests() -> list[list[str]]:
+    return [
+        ["T11", "Student opens /exam", "Question form is shown", "Pass"],
+        ["T12", "Teacher opens /internals", "Internal marks form is shown", "Pass"],
+        ["T13", "Admin opens /teachers", "Teacher list is shown", "Pass"],
+        ["T14", "Student opens /questions", "Redirect away from the editor", "Pass"],
+    ]
